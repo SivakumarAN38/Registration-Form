@@ -43,11 +43,11 @@ This project demonstrates how to connect frontend and backend using REST APIs an
 ```
 form-project/
 │
-├── backend/
+├── form-backend/
 │   ├── server.js
 │   ├── package.json
 │
-└── frontend/
+└── form-frontend/
     ├── index.html
     └── delete.png
 ```
@@ -67,7 +67,7 @@ git clone <your-repository-link>
 ### 2️⃣ Install Backend Dependencies
 
 ```
-cd backend
+cd form-backend
 npm install
 ```
 
@@ -102,7 +102,7 @@ http://localhost:5000
 Open:
 
 ```
-frontend/index.html
+form-frontend/index.html
 ```
 
 in your browser.
