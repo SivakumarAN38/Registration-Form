@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Full Stack Form</title>
+
+<style>
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    min-height: 100vh;
+    display: flex;
+    margin: 40px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(125deg, #141e30, #b5d7ff);
+    color: white;
+}
+
+/* CARD */
+form {
+    width: 420px;
+    padding: 40px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* INPUT */
+input {
+    width: 100%;
+    height: 45px;
+    margin-bottom: 20px;
+    padding: 0 15px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+input:focus {
+    box-shadow: 0 0 15px #00ffd5;
+    transform: scale(1.02);
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(45deg, #00c6ff, #0072ff);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+/* USER LIST */
+h3 {
+    margin-top: 40px;
+    text-align: center;
+}
+
+ul {
+    width: 420px;
+    margin-top: 15px;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    list-style: none;
+}
+
+ul li {
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: 0.3s;
+}
+
+ul li:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+}
+
+/* CUSTOM ALERT */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: -300px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    transition: 0.5s ease;
+    z-index: 999;
+}
+
+.toast.show {
+    right: 20px;
+}
+
+.toast.success {
+    background: linear-gradient(45deg, #49fde8, #96c93d);
+}
+
+.toast.error {
+    background: linear-gradient(45deg, #ff416c, #ff4b2b);
+}
+
+@media(max-width:500px){
+    form, ul {
+        width: 90%;
+    }
+}
+
+.user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;   /* 🔥 Perfect vertical alignment */
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    transition: 0.3s ease;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.delete-btn {
+    display: flex;              /* 🔥 Center icon inside */
+    align-items: center;        /* 🔥 Vertical center */
+    justify-content: center;    /* 🔥 Horizontal center */
+    
+    width: 40px;                /* Fixed size */
+    height: 40px;
+
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.delete-btn img {
+    width: 18px;
+    height: 18px;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 0, 0, 0.15);
+    transform: scale(1.1);
+}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<form id="userForm">
+    <h2>User Registration</h2>
+    <input type="text" id="name" placeholder="Enter Name" required />
+    <input type="email" id="email" placeholder="Enter Email" required />
+    <button type="submit">Register</button>
+</form>
+<h3>Registered Users</h3>
+<ul id="userList"></ul>
+
+<script>
+const form = document.getElementById("userForm");
+const userList = document.getElementById("userList");
+const toast = document.getElementById("toast");
+
+/* SPINNER */
+function showSpinner() {
+    const spinner = document.createElement("div");
+    spinner.id = "spinner";
+    spinner.innerHTML = "Loading...";
+    spinner.style.position = "fixed";
+    spinner.style.top = "50%";
+    spinner.style.left = "50%";
+    spinner.style.transform = "translate(-50%, -50%)";
+    spinner.style.background = "black";
+    spinner.style.padding = "20px";
+    spinner.style.borderRadius = "10px";
+    document.body.appendChild(spinner);
+}
+
+function hideSpinner() {
+    const spinner = document.getElementById("spinner");
+    if (spinner) spinner.remove();
+}
+
+/* TOAST */
+function showToast(message, type) {
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => toast.className = "toast", 3000);
+}
+
+/* SUBMIT */
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+
+    showSpinner();
+
+    try {
+        const response = await fetch("http://localhost:5000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email })
+        });
+
+        const data = await response.json();
+
+        hideSpinner();
+
+        if (!response.ok) {
+            showToast(data.message, "error");
+            return;
+        }
+
+        showToast(data.message, "success");
+        form.reset();
+        loadUsers();
+
+    } catch (error) {
+        hideSpinner();
+        showToast("Server Error", "error");
+    }
+});
+
+/* LOAD USERS */
+async function loadUsers() {
+    const response = await fetch("http://localhost:5000/users");
+    const users = await response.json();
+
+    userList.innerHTML = "";
+
+    users.forEach(user => {
+    const li = document.createElement("li");
+    li.className = "user-card";
+
+    li.innerHTML = `
+        <div class="user-info">
+            <strong>${user.name}</strong>
+            <small>${user.email}</small>
+        </div>
+
+        <button class="delete-btn" onclick="deleteUser('${user._id}', this)">
+            <img src="delete.png" alt="delete">
+        </button>
+    `;
+
+    userList.appendChild(li);
+});
+}
+
+/* DELETE USER */
+async function deleteUser(id, btn) {
+    await fetch(`http://localhost:5000/users/${id}`, {
+        method: "DELETE"
+    });
+
+    const card = btn.closest(".user-card");
+
+    card.style.transition = "0.4s ease";
+    card.style.opacity = "0";
+    card.style.transform = "translateX(80px)";
+
+    setTimeout(() => card.remove(), 400);
+
+    showToast("User deleted successfully", "success");
+}
+
+loadUsers();
+</script>
+
+</body>
+</html>
